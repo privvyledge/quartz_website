@@ -29,7 +29,14 @@ Use the convenience script from the F1/10 Autodriver repository:
 1. Create a ROS2 workspace and navigate to the `src` directory: `mkdir -p ~/f1tenth_ws/src && cd ~/f1tenth_ws/src`
 2. Clone the repository: `git clone https://github.com/privvyledge/autodriver.f1tenth.git`
 3. Launch the script: `cd autodriver.f1tenth && chmod +x scripts/* && ./scripts/install_software_jetson.sh`
-4. Add our user to the docker group to run without sudo: `sudo systemctl restart docker && sudo usermod -aG docker $USER && newgrp docker`
+4. (optional) Install Docker: `./scripts/install_nvidia_docker.sh`
+5. Add our user to the docker group to run without sudo: `sudo systemctl restart docker && sudo usermod -aG docker $USER && newgrp docker`
+6. Reboot to enable JTOP: `sudo reboot`
+7. Setup the ROS Workspace
+	1. Development mode
+		1. `./scripts/build_f1tenth_docker.sh`
+	2. Production
+		1. Pull and run the latest container: `xhost +local:root && jetson-containers run -v /dev:/dev -v ${HOME}/shared_dir:/mnt/shared_dir -v ${HOME}/data:/mnt/data --ipc host --env="QT_X11_NO_MITSHM=1" --privileged privvyledge/f1tenth:humble-latest /bin/bash && xhost -local:root`
 ### ii. Manual Setup
 Alternatively, run the desired commands listed below
 #### a. Setup SSH
@@ -145,6 +152,14 @@ sudo mv /tmp/99-joypad-f710.rules /etc/udev/rules.d/99-joypad-f710.rules
 5. Press "s| enable"
 6. 2. Press "e" to enable jetson clocks on boot or click "on boot"
 #### n. Increase default settings for ROS DDS
+
+#### o. (optional) Install Jetson Containers: 
+`cd ~/Downloads && git clone https://github.com/dusty-nv/jetson-containers && bash jetson-containers/install.sh`
+#### p. (optional: if using Logitech F710 controller)
+The default kernel of the Jetson Orin Nano Jetpack 6.x does not have support for the Logitech F710 controller and other XBOX like controllers. The most common solution is to rebuild the kernel with support for them ([detailed kernel customization tutorial](https://github.com/muellerbernd/l4t), [forum link](https://forums.developer.nvidia.com/t/jetpack-6-0-issue-with-xbox-gamepad/276392), [Jetson troubleshooting](https://elinux.org/Jetson/L4T/r36.3.x_patches)). However, a more straightforward solution is to install the Xpad package ([xpad solution using dkms](https://github.com/jetsonhacks/logitech-f710-module/issues/7), [xpad solution without dkms](https://github.com/woawo1213/jetpack6-joy)). Follow the instructions below: 
+1. Install dkms: `sudo apt-get install dkms`
+2. Remove any previous xpad installation: `sudo dkms remove -m xpad -v 0.4 --all` Proceed if 'Error! The module/version combo: xpad-0.4 is not located in the DKMS tree.' is encountered which means no xpad was not installed.
+3. Install xpad 0.4: `sudo git clone https://github.com/paroj/xpad.git /usr/src/xpad-0.4 && sudo dkms install -m xpad -v 0.4`
 ## 3. Setup F1/10 Workspace for Autonomous Driving
 It is recommended to pull the latest pre-built docker image. 
 ### Method 1: Using Pre-Built Docker Image (About 10 minutes depending on internet strength)
@@ -169,7 +184,7 @@ Otherwise run the commands below for manual setup
 1. CYCLONE
 ## 5. Teleoperate
 1. Add robot name as an environment variable `echo "export VEHICLE_NAME=<INSERT_NAME>" >> ~/.bashrc && source ~/.bashrc`. Replace <INSERT_NAME> with the desired robot name.
-2. Export the motor control type: `echo "export MOTOR_CONTROL_TYPE=0000" >> ~/.bashrc && source ~/.bashrc`. 'VESC Knockoff' and 'Velineon VXL-3S' do not have an IMU onboard. Non-VESC SDKs paired with e.g the Velineon VXL-3S only provides RPS/RPM/ERPM/PWM/DutyCycle control but no current control or feedback.
+2. Export the motor control type: `echo "export MOTOR_CONTROL_TYPE=0000" >> ~/.bashrc && source ~/.bashrc`. 'VESC Knockoff' and 'Velineon VXL-3S' do not have an IMU onboard (so disable vehicle IMU filter for all but 0000 and 0003). Non-VESC SDKs paired with e.g the Velineon VXL-3S only provides RPS/RPM/ERPM/PWM/DutyCycle control but no current control or feedback.
 	1. 0000 = ESC (VESC Original) + Motor + SDK (VESC)
 	2. 0001 = ESC (VESC Knockoff) + Motor + SDK (VESC)
 	3. 0002 = ESC (Velineon VXL-3S) + Motor + SDK (Arduino + Pyserial)
@@ -178,6 +193,7 @@ Otherwise run the commands below for manual setup
 	6.  0005 = ESC (SparkMax ESC) + Motor + SDK (pySparkMax)
 	7.  0006 = ESC (SparkMax ESCl) + Motor + SDK (Arduino + Pyserial)
 3. Connect the Joystick to the Jetson
+	1. If using a Logitech F710, switch the toggle at the top to 'X' instead of 'D'
 ## 6. (optional) Visualization
 Due to the limited CPU and RAM on the Jetson Orin Nano's, it is recommended to visualize the outputs on a remote computer. However, the following can still be done on the Jetson but will slow down the overall performance of nodes
 ### FoxGlove Setup
