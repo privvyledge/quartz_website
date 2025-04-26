@@ -16,8 +16,6 @@ tags:
 description: F1/10 Autodriver software setup tutorial
 ---
 Created: 2025-03-09
-
-The rest of your content lives here. You can use **Markdown** here :)
 ## 1. Flash Jetpack (6.2)
 **Note: The SDKManager Method is recommended for either SD cards or SSDs. However, the SD Card method can be faster or can be used if experiencing occasional bugs with the SDKManager.**
 ### SSD Method (or SDKManager Method)
@@ -29,10 +27,12 @@ Use the convenience script from the F1/10 Autodriver repository:
 1. Create a ROS2 workspace and navigate to the `src` directory: `mkdir -p ~/f1tenth_ws/src && cd ~/f1tenth_ws/src`
 2. Clone the repository: `git clone https://github.com/privvyledge/autodriver.f1tenth.git`
 3. Launch the script: `cd autodriver.f1tenth && chmod +x scripts/* && ./scripts/install_software_jetson.sh`
-4. (optional) Install Docker: `./scripts/install_nvidia_docker.sh`
+4. (optional: if SDKManager method was used) Install Docker: `./scripts/install_nvidia_docker.sh`
 5. Add our user to the docker group to run without sudo: `sudo systemctl restart docker && sudo usermod -aG docker $USER && newgrp docker`
 6. Reboot to enable JTOP: `sudo reboot`
-7. Setup the ROS Workspace
+7. Modify the OS for efficient ROS communication: See [[iii. Remote PC Communication]] for details.
+8. (optional) Setup RustDesk for remote communication and visualization. See [[RustDesk Setup on Jetson Orin Nano]] for details.
+9. Setup the ROS Workspace
 	1. Development mode
 		1. `./scripts/build_f1tenth_docker.sh`
 	2. Production
@@ -88,19 +88,52 @@ sudo apt install -y jq && sudo jq '. + {"default-runtime": "nvidia"}' /etc/docke
   sudo mv /etc/docker/daemon.json.tmp /etc/docker/daemon.json && sudo systemctl daemon-reload && sudo systemctl restart docker 
 ```
 
+#### e. (optional: if using SD Card): Mount SSD and migrate docker to SSD
+1. Unplug the Jetson from the power supply.
+2. Install the M.2 SSD and secure with the screw.
+3. Connect the power supply and boot up the Jetson.
+4. Verify that the system recognizes the SSD and memory controller by running: `lspci`
+5. Find the device name by running: `lsblk`
+6. Format the SSD for compatibility with the Jetson. Assuming your SSD name from the above is 'nvme0n1': `sudo mkfs.ext4 /dev/nvme0n1`
+7. Create a mount point for the SSD: `sudo mkdir -p /mnt/f1tenth_ssd`
+8. Mount the SSD: `sudo mount /dev/nvme0n1 /mnt/f1tenth_ssd`
+9. Setup automatic mounting on each boot:
+	1. Find the SSD UUID by running: `lsblk -f`
+	2. Add a new entry to the FSTAB file: `sudo apt update && sudo apt install -y nano && sudo nano /etc/fstab`
+	3. Insert the following line to the fstab file replacing <DEVICE_UUID> with the UUID identified when runnin `lsblk -f`: `UUID=<DEVICE_UUID> /mnt/f1tenth_ssd/ ext4 defaults 0 2`
+	4. Change the ownership of the SSD to the user instead of root: `sudo chown ${USER}:${USER} /mnt/f1tenth_ssd`
+10. Migrate docker to the SSD
+	1. Move the existing docker folder from the SD Card to the SSD: `sudo du -csh /var/lib/docker/ && sudo mkdir /mnt/f1tenth_ssd/docker && sudo rsync -axPS /var/lib/docker/ /mnt/f1tenth_ssd/docker/ && sudo du -csh  /mnt/f1tenth_ssd/docker/`
+	2. Edit the docker configuration using a text editor, e.g nano or gedit: `sudo nano /etc/docker/daemon.json`
+	   Insert "data-root" like below:
+> 		{
+> 		    "runtimes": {
+> 		        "nvidia": {
+> 		            "path": "nvidia-container-runtime",
+> 		            "runtimeArgs": []
+> 		        }
+> 		    },
+> 		    "default-runtime": "nvidia",
+> 		    "data-root": "/mnt/f1tenth_ssd/docker"
+> 		}
+11. Rename the old docker directory: `sudo mv /var/lib/docker /var/lib/docker.old`
+12. Restart the docker daemon: `sudo systemctl daemon-reload && sudo systemctl restart docker && sudo journalctl -u docker`
+
 #### e. Install Nvidia-Jetpack and other Nvidia Packages if not installed via SDK Manager or SDCard method
 `sudo apt update && sudo apt install -y nvidia-jetpack`
 #### f. Increase Power Settings to MAXN Super (Fastest)
 1. `sudo nvpmodel -m 2`
 2. `sudo reboot`
 #### g. Mount SWAP
+**NOTE: IF using the SD Card + SSD setup, mount SWAP on the SSD since the rapid continuous read/write updates by RAM will degrade the lifespan of the SD card. Replace '/mnt/16GB.swap' below with '/mnt/f1tenth_ssd/16GB.swap'**
 When running multiple nodes, mounting swap is recommended for extra memory. If an SSD is available, it should be used as most consumer grade SD Cards have limited read/write cycles and swap could degrade the SD card faster.
 ```bash
+export SWAP_DIRECTORY=/mnt/16GB.swap  # /mnt/f1tenth_ssd/16GB.swap for SD Card + SSD setup
 sudo systemctl disable nvzramconfig
-sudo fallocate -l 16G /mnt/16GB.swap  
-sudo chmod 600 /mnt/16GB.swap  
-sudo mkswap /mnt/16GB.swap  
-sudo swapon /mnt/16GB.swap  
+sudo fallocate -l 16G ${SWAP_DIRECTORY} 
+sudo chmod 600 ${SWAP_DIRECTORY}
+sudo mkswap ${SWAP_DIRECTORY}  
+sudo swapon ${SWAP_DIRECTORY} 
 sudo cp /etc/fstab /etc/fstab.bak  
 echo '/mnt/16GB.swap none swap sw 0 0' | sudo tee -a /etc/fstab  
 echo "Allocated 16GB Swap memory."
@@ -181,7 +214,9 @@ ${ISAAC_ROS_WS}/src/isaac_ros_common/scripts/docker_deploy.sh \
 Otherwise run the commands below for manual setup
 1. Install git lfs: `sudo apt-get install git-lfs`
 ## 4. Modify the OS for efficient ROS communication
-1. CYCLONE
+See [[iii. Remote PC Communication]] for details.
+## 5. (optional) Setup RustDesk for remote communication and visualization
+See [[RustDesk Setup on Jetson Orin Nano]] for details.
 ## 5. Teleoperate
 1. Add robot name as an environment variable `echo "export VEHICLE_NAME=<INSERT_NAME>" >> ~/.bashrc && source ~/.bashrc`. Replace <INSERT_NAME> with the desired robot name.
 2. Export the motor control type: `echo "export MOTOR_CONTROL_TYPE=0000" >> ~/.bashrc && source ~/.bashrc`. 'VESC Knockoff' and 'Velineon VXL-3S' do not have an IMU onboard (so disable vehicle IMU filter for all but 0000 and 0003). Non-VESC SDKs paired with e.g the Velineon VXL-3S only provides RPS/RPM/ERPM/PWM/DutyCycle control but no current control or feedback.
@@ -194,6 +229,7 @@ Otherwise run the commands below for manual setup
 	7.  0006 = ESC (SparkMax ESCl) + Motor + SDK (Arduino + Pyserial)
 3. Connect the Joystick to the Jetson
 	1. If using a Logitech F710, switch the toggle at the top to 'X' instead of 'D'
+4. **NOTE: if running on an x86 PC, change the owner of the workspace directory to enable building and avoiding permission errors by running `sudo chown -R ${USERNAME} /workspaces`**
 ## 6. (optional) Visualization
 Due to the limited CPU and RAM on the Jetson Orin Nano's, it is recommended to visualize the outputs on a remote computer. However, the following can still be done on the Jetson but will slow down the overall performance of nodes
 ### FoxGlove Setup
