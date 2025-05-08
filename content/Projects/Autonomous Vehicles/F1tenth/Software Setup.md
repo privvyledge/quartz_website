@@ -17,7 +17,7 @@ description: F1/10 Autodriver software setup tutorial
 ---
 Created: 2025-03-09
 ## 1. Flash Jetpack (6.2)
-**Note: The SDKManager Method is recommended for either SD cards or SSDs. However, the SD Card method can be faster or can be used if experiencing occasional bugs with the SDKManager.**
+**Note: The SD Card method is recommended for use since various tests show that Jetsons setup with SDKManager have various bugs (network disconnections, slow WiFi/Bluetooth speeds, random SSH and network disconnections, etc.) and performance issues not present in Jetsons setup with the SD Card method. Also, the SD Card method is much faster, stable, reproduceable, portable and can be used in conjuction with an external SSD.**
 ### SSD Method (or SDKManager Method)
 ### SD Card Method
 
@@ -135,7 +135,8 @@ sudo chmod 600 ${SWAP_DIRECTORY}
 sudo mkswap ${SWAP_DIRECTORY}  
 sudo swapon ${SWAP_DIRECTORY} 
 sudo cp /etc/fstab /etc/fstab.bak  
-echo '/mnt/16GB.swap none swap sw 0 0' | sudo tee -a /etc/fstab  
+echo '${SWAP_DIRECTORY} none swap sw 0 0' | sudo tee -a /etc/fstab  
+echo envsubst < /etc/fstab > /etc/fstab
 echo "Allocated 16GB Swap memory."
 ```
 
