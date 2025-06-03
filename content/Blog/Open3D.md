@@ -1,3 +1,11 @@
+---
+title: Open3D
+date: 2025-05-08
+draft: false
+tags: []
+description: 
+---
+Created: 2025-05-08
 ## Applications
 ### Sensors
 ### Realsense ([RealSense with Open3D - Open3D primary (unknown) documentation](https://www.open3d.org/docs/latest/tutorial/sensor/realsense.html))
@@ -35,8 +43,9 @@
 **Note: This method automatically reads the bag from  ${OUTPUT_FOLDER}/realsense.bag**
 * `python3 <path_to_Open3D>/examples/python/reconstruction_system/sensors/realsense_recorder.py --playback_rosbag  --output_folder ${OUTPUT_FOLDER}`
 #### Run the Reconstruction System
-**There are two versions of the reconstruction system, the newer tensor based implementation and the legacy implementation. The tensor based run files can use either the new tensor based implementation or the legacy implementation. While both support GPU acceleration, the newer tensor based method is recommended for online (real-time) odometry and SLAM. Use the legacy version if the tensor-based implementation fails.**
-**Tip: if Open3D was built with RealSense and GUI support, the sections below can be done with the following command: `<path_to_Open3D>/build/bin/examples/OnlineSLAMRealSense --align --record ${OUTPUT_FOLDER}/realsense.bag`  # pass in --help to see more options**
+**Tips:** 
+1. There are two versions of the reconstruction system, the newer tensor based implementation and the legacy implementation. The tensor based run files can use either the new tensor based implementation or the legacy implementation. While both support GPU acceleration, the newer tensor based method is recommended for online (real-time) odometry and SLAM. Use the legacy version if the tensor-based implementation fails.
+2. If Open3D was built with RealSense and GUI support, the sections below can be done with the following command: `<path_to_Open3D>/build/bin/examples/OnlineSLAMRealSense --align --record ${OUTPUT_FOLDER}/realsense.bag`  # pass in --help to see more options
 ##### Record Dataset (if Bag was not recorded)
 * `python3 examples/python/reconstruction_system/sensors/realsense_recorder.py  --record_imgs --output_folder ${OUTPUT_FOLDER}`  # could also replace `--record_imgs` with `--record_rosbag`
 ##### Save the configuration file for the reconstruction system
@@ -83,7 +92,7 @@ surface_weight_thr: 3.0
 * Open the following json file for editing: `nano config/realsense_reconstruction.json`
 * Paste the lines below and modify the values of "path_dataset" and "path_intrinsic" to match your values. Take note of the following:
 	* Leave "path_intrinsic" empty or set to any invalid value to get the intrinsic data from the bagfile. Otherwise, set to the a valid realsense intrinsic path, e.g ${OUTPUT_FOLDER}/ as in the example below.
-	* Set "path_dataset" to the either a ROSBAG file, e.g "${OUTPUT_FOLDER}/realsense.bag" (if `--record_rosbag` was used) or a directory, e.g ${OUTPUT_FOLDER} (if `--record_imgs` was used).
+	* Set "path_dataset" to the either a ROSBAG file, e.g. "${OUTPUT_FOLDER}/realsense.bag" (if `--record_rosbag` was used) or a directory, e.g ${OUTPUT_FOLDER} (if `--record_imgs` was used).
 	* If "path_dataset" corresponds to a ROSBAG, set "python_multi_threading" to false. For "path_dataset", setting "python_multi_threading" to either true of false works. We set it as false here just to cover both cases.
 ```json
 {
@@ -102,10 +111,10 @@ surface_weight_thr: 3.0
 }
 ```
 ##### Run the reconstruction system
-###### Method1: Only works if open3d was built with gui and python support (all options listed are equivalent, but listed in decreasing order of recommendation)
+###### Method !: Only works if open3d was built with gui and python support (all options listed are equivalent, but listed in decreasing order of recommendation)
 1. Built C++ binary file (recommended): `<path_to_Open3D>/build/bin/examples/OnlineSLAMRGBD --align --dataset_path ${OUTPUT_FOLDER} --device CUDA:0 --intrinsic_path ${OUTPUT_FOLDER}/camera_intrinsic.json`
 2. Python : `python <path_to_Open3D>/examples/python/reconstruction_system/dense_slam_gui.py --config config/realsense_reconstruction_t.yaml`
-###### method2: works as long as open3d was built with python support
+###### Method 2: works as long as open3d was built with python support
 * New tensor-based reconstruction system:`python <path_to_Open3D>/examples/python/t_reconstruction_system/run_system.py --config config/realsense_reconstruction_t.yaml
 * Legacy reconstruction system:`python <path_to_Open3D>/examples/python/reconstruction_system/run_system.py --config config/realsense_reconstruction.json --make --register --refine --integrate --device cuda:0`
 Here is a breakdown of what the arguments mean:
