@@ -1,4 +1,11 @@
-
+---
+title: RTSP Streaming
+date: 2025-03-07
+draft: false
+tags: 
+description:
+---
+Created: 2025-03-07
 ## RTSP Server
 1. Install and run the [RTSP server](https://github.com/bluenviron/mediamtx):
 	1.  Docker: `docker run --rm -it --network=host bluenviron/mediamtx:latest`

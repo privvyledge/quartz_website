@@ -1,3 +1,11 @@
+---
+title: RustDesk Setup on Jetson Orin Nano
+date: 2025-04-22
+draft: false
+tags: 
+description:
+---
+Created: 2025-04-22
 ## 1. Install RustDesk
 1. Install dependencies: `sudo apt install -y libxdo3`
 2. Download RustDesk: `wget https://github.com/rustdesk/rustdesk/releases/download/1.3.9/rustdesk-1.3.9-aarch64.deb -O /tmp/rustdesk.deb`

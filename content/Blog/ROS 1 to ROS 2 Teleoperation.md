@@ -1,3 +1,11 @@
+---
+title: ROS 1 to ROS 2 Teleoperation
+date: 2025-03-21
+draft: false
+tags: 
+description:
+---
+Created: 2025-03-21
 The corresponding code can be found [at my GitHub repository](https://github.com/privvyledge/ros1_to_ros2_communication)
 ## Installation:
 1. Pull the ROS foxy to noetic bridge: `docker pull ros:foxy-ros1-bridge`

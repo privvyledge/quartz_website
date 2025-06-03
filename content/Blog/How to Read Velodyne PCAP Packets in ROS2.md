@@ -22,7 +22,7 @@ For the past couple of years (from 2023), I have been working on the US Departme
 Without further ado, here are the steps needed to read PCAP files and publish corresponding PointClouds in ROS2:
 
 ## 1. Obtain PCAP files
-The first step is to download LIDAR PCAP files. For the purpose of this tutorial and project, we will download the Sample 1 dataset from the [[US Department of Transportations Intersection Safety Challenge]] found [here]([Intersection Safety Challenge Stage 1B Sample | Department of Transportation - Data Portal](https://data.transportation.gov/Roadways-and-Bridges/Intersection-Safety-Challenge-Stage-1B-Sample/vq7s-mv3v/about_data)). However, any PCAP file generated from Velodyne LIDARs should suffice.
+The first step is to download LIDAR PCAP files. For the purpose of this tutorial and project, we will download the Sample 1 dataset from the [[US Department of Transportations Intersection Safety Challenge]] found at [Intersection Safety Challenge Stage 1B Sample | Department of Transportation - Data Portal](https://data.transportation.gov/Roadways-and-Bridges/Intersection-Safety-Challenge-Stage-1B-Sample/vq7s-mv3v/about_data). However, any PCAP file generated from Velodyne LIDARs should suffice.
 ## 2. Install ROS 2 Humble
 Follow the instructions detailed in [[ROS2 Installation]].
 
@@ -63,5 +63,5 @@ First, the raw packets need to be streamed either from a live Velodyne LIDAR or 
 ## 5. Visualize the published PointCloud
 ### RViz view of the "Run_2" PointCloud of "LIDAR_1" from the "Sample_1" dataset running at 10Hz.
 ![[sample1_run2_lidar1_pointcloud.gif]]### RViz view of the corresponding LaserScan from the same LIDAR PointCloud above.
-![[sample1_run2_lidar1_laserscan.gif]]# 6. Velodyne Node Graph
+![[sample1_run2_lidar1_laserscan.gif]]# 6. Velodyne ROS Node Graph
 ![[velodyne_rosgraph.png]]

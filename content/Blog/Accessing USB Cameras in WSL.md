@@ -1,3 +1,11 @@
+---
+title: Accessing USB Cameras in WSL
+date: 2025-04-20
+draft: false
+tags: 
+description:
+---
+Created: 2025-04-20
 ## Links
 * Check my yellow flash drive
 ## Steps

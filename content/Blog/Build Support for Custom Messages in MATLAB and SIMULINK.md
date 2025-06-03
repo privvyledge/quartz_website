@@ -1,3 +1,11 @@
+---
+title: Build Support for Custom Messages in MATLAB and SIMULINK
+date: 2025-05-20
+draft: false
+tags: 
+description:
+---
+Created: 2025-05-20
 ## Links:
 * [ros2genmsg](https://www.mathworks.com/help/ros/ref/ros2genmsg.html)
 * [ROS Toolbox System Requirements](https://www.mathworks.com/help/ros/gs/ros-system-requirements.html)
